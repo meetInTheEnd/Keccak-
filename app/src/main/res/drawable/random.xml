@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 边框颜色 -->
+    <item>
+        <shape>
+            <solid android:color="#ADADAD" />
+        </shape>
+    </item>
+
+    <!-- 背景颜色 -->
+    <item
+        android:bottom="2dp"
+        android:top="2dp"
+        android:left="2dp"
+        android:right="2dp">
+        <shape>
+            <solid android:color="#fff" />
+            <padding android:bottom="5dp" />
+        </shape>
+    </item>
+</layer-list>
