@@ -14,9 +14,19 @@ import static zzzqi.keccak.Parameters.SHAKE256;
 import static zzzqi.keccak.HexUtils.convertBytesToString;
 
 import java.nio.charset.Charset;
+
+import android.annotation.SuppressLint;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Button;
 import android.content.Context;
@@ -24,10 +34,9 @@ import android.hardware.SensorManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Date;
-import java.util.Calendar;
-
-import java.text.SimpleDateFormat;
 
 
 
@@ -41,55 +50,57 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button getRandom = findViewById(R.id.getRandom);
         getRandom.setOnClickListener(this);
 
-        //传感器
-        //获取SensorManager实例
-        sensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
-        //获取Sensor传感器类型
-        Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
-        //注册SensorEventListener
-        sensorManager.registerListener(listener,sensor,SensorManager.SENSOR_DELAY_NORMAL);
+        final Intent serviceIntent = new Intent(this, sensor.class);
+        startService(serviceIntent);
     }
-    public String sensorData;
-    private SensorManager sensorManager;
-    //对传感器信号进行监听
-    private SensorEventListener listener = new SensorEventListener() {
-        @Override
-        public void onSensorChanged(SensorEvent event) {
-            sensorData = String.valueOf(event.values[0]);
-        }
-        @Override
-        public void onAccuracyChanged(Sensor sensor,int accuracy) {
 
-        }
+    private static Handler handler = new Handler();
+    private static String sensorData ;
+
+    public static void UpdateGUI(String refreshStr){
+        sensorData = refreshStr;
+        handler.post(RefreshLable);
+    }
+
+    private static Runnable RefreshLable = new Runnable(){
+        @Override
+        public void run() {}
     };
 
     @Override
-    public void onClick(View v) {
-        //开始时间
-      Calendar c = Calendar.getInstance();
-        int beginHour = c.get(Calendar.HOUR_OF_DAY);
-        int beginMinute = c.get(Calendar.MINUTE);
-        int beginSecond = c.get(Calendar.SECOND);
-        //执行Keccak算法
-        byte[] data = sensorData.getBytes(Charset.forName("UTF-8"));
+    public void onClick(View v)
+    {
+        long startTime = System.currentTimeMillis();
+
         TextView random = findViewById(R.id.random);
-        Keccak keccak = new Keccak();
-        random.setText("随机序列为:\n");
-        random.append(convertBytesToString(keccak.getHash(data, KECCAK_224)));
-        //结束时间
-        int endHour = c.get(Calendar.HOUR_OF_DAY);
-        int endMinute = c.get(Calendar.MINUTE);
-        int endSecond = c.get(Calendar.SECOND);
-        int costSecond = (endHour - beginHour) * 3600 + (endMinute - beginMinute) * 60 + (endSecond - beginSecond);
-        random.append("\n运行时间:\n" + costSecond + "s");
+        random.setText("");
+
+       for(int i=0; i<2; i++) {
+           byte[] data = sensorData.getBytes(Charset.forName("UTF-8"));
+           Keccak keccak = new Keccak();
+         //convertBytesToString(keccak.getHash(data, KECCAK_512));
+           random.append(convertBytesToString(keccak.getHash(data, KECCAK_512)) + "\n");
+        }
+
+        long endTime = System.currentTimeMillis();
+        long runTime = endTime - startTime;
+
+        //获取安卓设备资源占用数据
+        AndroidMonitor AndroidMonitor = new AndroidMonitor();
+        double CPU = AndroidMonitor.getCPU(getPackageName());
+        double memory = AndroidMonitor.getMemory(getPackageName());
+        System.out.println(getPackageName());
+        //数据输出到屏幕
+        random.append("运行时间:\n" +String.valueOf(runTime)+"ms\n");
+        random.append("CPU:\n" + String.valueOf(CPU)+"\n");
+        random.append("memory:\n" +String.valueOf(memory)+"\n");
+
     }
 
-    @Override protected void onDestroy() {
+    @Override
+    protected void onDestroy() {
         super.onDestroy();
-        //传感器使用完毕，释放资源
-        if(sensorManager!=null){
-            sensorManager.unregisterListener(listener);
-        }
     }
 
 }
+
