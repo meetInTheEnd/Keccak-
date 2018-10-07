@@ -1,17 +1,6 @@
 package zzzqi.keccak;
 
 
-import static zzzqi.keccak.Parameters.KECCAK_224;
-import static zzzqi.keccak.Parameters.KECCAK_256;
-import static zzzqi.keccak.Parameters.KECCAK_384;
-import static zzzqi.keccak.Parameters.KECCAK_512;
-import static zzzqi.keccak.Parameters.SHA3_224;
-import static zzzqi.keccak.Parameters.SHA3_256;
-import static zzzqi.keccak.Parameters.SHA3_384;
-import static zzzqi.keccak.Parameters.SHA3_512;
-import static zzzqi.keccak.Parameters.SHAKE128;
-import static zzzqi.keccak.Parameters.SHAKE256;
-import static zzzqi.keccak.HexUtils.convertBytesToString;
 
 import java.nio.charset.Charset;
 
@@ -50,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button getRandom = findViewById(R.id.getRandom);
         getRandom.setOnClickListener(this);
 
-        final Intent serviceIntent = new Intent(this, sensor.class);
+        final Intent serviceIntent = new Intent(this,sensor.class);
         startService(serviceIntent);
     }
 
@@ -75,25 +64,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         TextView random = findViewById(R.id.random);
         random.setText("");
 
-       for(int i=0; i<2; i++) {
-           byte[] data = sensorData.getBytes(Charset.forName("UTF-8"));
-           Keccak keccak = new Keccak();
-         //convertBytesToString(keccak.getHash(data, KECCAK_512));
-           random.append(convertBytesToString(keccak.getHash(data, KECCAK_512)) + "\n");
-        }
+        long time =System.currentTimeMillis();
+        byte[] messageBytes = sensorData.getBytes(Charset.forName("UTF-8"));
+        byte[] hashBytes = FIPS202.HashFunction.SHA3_256.apply(messageBytes);
+        String hashHex = FIPS202.hexFromBytes(hashBytes);
+        for (int i = 0; i < 9999; ++i) {
+           messageBytes = hashHex.getBytes();
+           hashBytes = FIPS202.HashFunction.SHA3_256.apply(messageBytes);
+           hashHex=FIPS202.hexFromBytes(hashBytes);
+       }
+       long time2= System.currentTimeMillis();
+       System.out.println(time2-time);
 
         long endTime = System.currentTimeMillis();
         long runTime = endTime - startTime;
 
         //获取安卓设备资源占用数据
-        AndroidMonitor AndroidMonitor = new AndroidMonitor();
-        double CPU = AndroidMonitor.getCPU(getPackageName());
-        double memory = AndroidMonitor.getMemory(getPackageName());
-        System.out.println(getPackageName());
         //数据输出到屏幕
         random.append("运行时间:\n" +String.valueOf(runTime)+"ms\n");
-        random.append("CPU:\n" + String.valueOf(CPU)+"\n");
-        random.append("memory:\n" +String.valueOf(memory)+"\n");
 
     }
 

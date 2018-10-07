@@ -96,13 +96,14 @@ public class AndroidMonitor extends Activity {
         return flow;
     }
 
-    public static double getCPU(String PackageName) {
+    public static String getCPU(String PackageName) {
 
         double Cpu = 0;
+        String str1=null;
         try {
 
             Runtime runtime = Runtime.getRuntime();
-            Process proc = runtime.exec("adb shell top -n 1| grep " + PackageName);
+            Process proc = runtime.exec("top -n 1|grep" + PackageName);
             try {
                 if (proc.waitFor() != 0) {
                     System.err.println("exit value = " + proc.exitValue());
@@ -115,11 +116,13 @@ public class AndroidMonitor extends Activity {
 
                 }
 
-                String str1 = stringBuffer.toString();
-                String str3 = str1.substring(str1.indexOf(PackageName) - 43, str1.indexOf(PackageName)).trim();
+                str1 = stringBuffer.toString();
+                System.out.print(str1);
+                /**String str3 = str1.substring(str1.indexOf(PackageName) - 43, str1.indexOf(PackageName)).trim();
                 String cpu = str3.substring(0, 2);
                 cpu = cpu.trim();
                 Cpu = Double.parseDouble(cpu);
+                 **/
 
             } catch (InterruptedException e) {
                 System.err.println(e);
@@ -131,21 +134,22 @@ public class AndroidMonitor extends Activity {
             }
         } catch (Exception StringIndexOutOfBoundsException) {
 
-            System.out.println("请检查设备是否连接");
+            StringIndexOutOfBoundsException.printStackTrace();
 
         }
 
-        return Cpu;
+        return str1;
 
     }
 
-    public static double getMemory(String PackageName) {
+    public static String getMemory(String PackageName) {
 
         double Heap = 0;
+        String str1= null;
 
         try {
             Runtime runtime = Runtime.getRuntime();
-            Process proc = runtime.exec("adb shell dumpsys meminfo " + PackageName);
+            Process proc = runtime.exec("ls ");
             try {
                 if (proc.waitFor() != 0) {
                     System.err.println("exit value = " + proc.exitValue());
@@ -158,14 +162,16 @@ public class AndroidMonitor extends Activity {
 
                 }
 
-                String str1 = stringBuffer.toString();
-                String str2 = str1.substring(str1.indexOf("Objects") - 60, str1.indexOf("Objects"));
+                str1 = stringBuffer.toString();
+                System.out.print(str1);
+                /**String str2 = str1.substring(str1.indexOf("Objects") - 60, str1.indexOf("Objects"));
                 String str3 = str2.substring(0, 10);
                 str3 = str3.trim();
                 Heap = Double.parseDouble(str3) / 1024;
                 DecimalFormat df = new DecimalFormat("#.000");
                 String memory = df.format(Heap);
                 Heap = Double.parseDouble(memory);
+                 **/
 
             } catch (InterruptedException e) {
                 System.err.println(e);
@@ -178,9 +184,9 @@ public class AndroidMonitor extends Activity {
         }
 
         catch (Exception StringIndexOutOfBoundsException) {
-            System.out.print("请检查设备是否连接");
+            StringIndexOutOfBoundsException.printStackTrace();
 
         }
-        return Heap;
+        return str1;
     }
 }
